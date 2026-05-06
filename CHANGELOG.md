@@ -7,13 +7,17 @@ and [Semantic Versioning](https://semver.org).
 ## [Unreleased]
 
 ### Added
-- `Support\EventOutcome` enum (`Success` / `Failure` / `Neutral`)
-  classifies event types by their business semantic. Used by the
-  inspector to flag failure-shape events visually so users don't read
-  "no handler ran" as "everything's fine" when the underlying event is
-  a decline, refund, dispute, or cancellation.
-- Inspector now shows a red `● failure` annotation next to the type
-  on rows / detail header for events whose type matches that pattern.
+- `Support\PaymentOutcome` value object reads the actual payment result
+  from `data.object` (charge `paid` flag, payment_intent `status`,
+  checkout.session `payment_status`, invoice `status`, plus refund and
+  dispute event types). When paid is false, surfaces `failure_message`
+  / `failure_code` (charges) or `last_payment_error` (payment_intents).
+  More truthful than inferring from the event type name.
+- Inspector renders a prominent `✓ Payment succeeded` /
+  `✗ Payment did not succeed: <reason>` callout on the detail page when
+  the payload carries a payment outcome, plus a small inline
+  `✓ paid` / `✗ <code>` annotation next to each row's event type in
+  the table.
 - Inspector now distinguishes "processed with handlers" from "processed
   without handlers" via separate badges (green `processed` vs gray
   `no-op`).

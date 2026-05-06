@@ -54,17 +54,48 @@
         .badge.processing { background: var(--warn); }
         .badge.processed { background: var(--good); }
         .badge.no-op { background: var(--grey); color: var(--text); border: 1px solid var(--border); }
-        .outcome-failure {
+        .outcome-success, .outcome-failure {
             display: inline-block;
             margin-left: 6px;
-            color: var(--bad);
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             vertical-align: middle;
         }
-        .outcome-failure::before { content: "● "; }
+        .outcome-success { color: var(--good); }
+        .outcome-success::before { content: "✓ "; }
+        .outcome-failure { color: var(--bad); }
+        .outcome-failure::before { content: "✗ "; }
+        .outcome-card {
+            margin: 16px 0;
+            padding: 16px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .outcome-card.success {
+            background: rgba(34, 197, 94, 0.06);
+            border-color: var(--good);
+            border-left-width: 4px;
+        }
+        .outcome-card.failure {
+            background: rgba(239, 68, 68, 0.06);
+            border-color: var(--bad);
+            border-left-width: 4px;
+        }
+        .outcome-card .headline {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0 0 6px;
+        }
+        .outcome-card.success .headline { color: var(--good); }
+        .outcome-card.failure .headline { color: var(--bad); }
+        .outcome-card .reason {
+            font-size: 13px;
+            color: var(--text);
+            margin: 0;
+        }
+        .outcome-card .reason code { color: var(--muted); margin-left: 6px; }
         .badge.failed { background: var(--warn); }
         .badge.dead_letter { background: var(--bad); }
         .badge.pending { background: var(--grey); }

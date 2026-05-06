@@ -11,9 +11,25 @@
 @section('content')
     @php
         $payloadJson = json_encode($call->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $outcome = \TransistorizedCmd\StripeToolkit\Webhooks\Support\EventOutcome::classify($call->type);
-        $isFailureOutcome = $outcome === \TransistorizedCmd\StripeToolkit\Webhooks\Support\EventOutcome::Failure;
+        $payment = \TransistorizedCmd\StripeToolkit\Webhooks\Support\PaymentOutcome::fromPayload($call->payload->toArray());
     @endphp
+
+    @if ($payment->applies())
+        <div class="outcome-card {{ $payment->isSuccess() ? 'success' : 'failure' }}">
+            @if ($payment->isSuccess())
+                <p class="headline">✓ Payment succeeded</p>
+                <p class="reason">Stripe reports this event ended in a successful payment.</p>
+            @else
+                <p class="headline">✗ Payment did not succeed</p>
+                <p class="reason">
+                    {{ $payment->message ?? 'Stripe reports this event represents a failed, refunded, or disputed payment.' }}
+                    @if ($payment->code)
+                        <code>{{ $payment->code }}</code>
+                    @endif
+                </p>
+            @endif
+        </div>
+    @endif
 
     <a href="{{ route('stripe-webhooks.debug.index') }}" class="back">&larr; all webhooks</a>
     <a href="{{ route('stripe-webhooks.debug.index', ['duplicate' => $call->id]) }}" class="back" style="float: right;">
@@ -27,12 +43,7 @@
                 <dt>id</dt>
                 <dd><code>{{ $call->stripe_event_id }}</code></dd>
                 <dt>type</dt>
-                <dd>
-                    <code>{{ $call->type }}</code>
-                    @if ($isFailureOutcome)
-                        <span class="outcome-failure" title="This event type signals a negative business outcome">failure event</span>
-                    @endif
-                </dd>
+                <dd><code>{{ $call->type }}</code></dd>
                 <dt>status</dt>
                 <dd>
                     @php

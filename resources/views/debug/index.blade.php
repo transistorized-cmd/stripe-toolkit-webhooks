@@ -71,15 +71,17 @@
                     $url = route('stripe-webhooks.debug.show', $call->id);
                     $dup = route('stripe-webhooks.debug.index', ['duplicate' => $call->id]);
                     $isNoOp = $call->status === 'processed' && $rowCounts->isEmpty();
-                    $outcome = \TransistorizedCmd\StripeToolkit\Webhooks\Support\EventOutcome::classify($call->type);
+                    $payment = \TransistorizedCmd\StripeToolkit\Webhooks\Support\PaymentOutcome::fromPayload($call->payload->toArray());
                 @endphp
                 <tr>
                     <td><a href="{{ $url }}">{{ $call->id }}</a></td>
                     <td><a href="{{ $url }}"><code>{{ $call->stripe_event_id }}</code></a></td>
                     <td>
                         <code>{{ $call->type }}</code>
-                        @if ($outcome === \TransistorizedCmd\StripeToolkit\Webhooks\Support\EventOutcome::Failure)
-                            <span class="outcome-failure" title="This event type signals a negative business outcome (declined, canceled, refunded, expired, …)">failure</span>
+                        @if ($payment->isSuccess())
+                            <span class="outcome-success" title="Payment succeeded according to the payload">paid</span>
+                        @elseif ($payment->isFailure())
+                            <span class="outcome-failure" title="{{ $payment->message ?? 'Payment failure — see detail page' }}">{{ $payment->code ?? 'not paid' }}</span>
                         @endif
                     </td>
                     <td>
