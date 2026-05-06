@@ -53,6 +53,7 @@
         .badge.received { background: var(--grey); }
         .badge.processing { background: var(--warn); }
         .badge.processed { background: var(--good); }
+        .badge.no-op { background: var(--grey); color: var(--text); border: 1px solid var(--border); }
         .badge.failed { background: var(--warn); }
         .badge.dead_letter { background: var(--bad); }
         .badge.pending { background: var(--grey); }

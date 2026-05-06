@@ -27,7 +27,16 @@
                 <dt>type</dt>
                 <dd><code>{{ $call->type }}</code></dd>
                 <dt>status</dt>
-                <dd><span class="badge {{ $call->status }}">{{ $call->status }}</span></dd>
+                <dd>
+                    @php
+                        $isNoOp = $call->status === 'processed' && $call->handlerRuns->isEmpty();
+                    @endphp
+                    @if ($isNoOp)
+                        <span class="badge no-op" title="The kit persisted this event but no handler was registered for its type — no business action was taken.">no-op</span>
+                    @else
+                        <span class="badge {{ $call->status }}">{{ $call->status }}</span>
+                    @endif
+                </dd>
                 <dt>source</dt>
                 <dd>{{ $call->source }}</dd>
                 <dt>livemode</dt>
@@ -63,7 +72,14 @@
     <div class="card" style="margin-bottom: 16px;">
         <h2>handler runs ({{ $call->handlerRuns->count() }})</h2>
         @if ($call->handlerRuns->isEmpty())
-            <div style="color: var(--muted); font-style: italic;">no handlers were dispatched for this event type</div>
+            <div style="background: rgba(100, 116, 139, 0.08); border: 1px dashed var(--border); border-radius: 6px; padding: 12px 14px; font-size: 13px; color: var(--muted);">
+                <strong style="color: var(--text);">No handler ran.</strong>
+                Nothing in <code>config/stripe-webhooks.php → handlers</code> nor any
+                <code>#[StripeEvent('{{ $call->type }}')]</code>-tagged class matched this type.
+                The kit verified the signature, persisted the call for audit, and stopped.
+                <strong style="color: var(--text);">No business state changed.</strong>
+                Register a handler if you want this event to do something.
+            </div>
         @else
             <table>
                 <thead>

@@ -70,12 +70,19 @@
                     $rowCounts = $runCounts[$call->id] ?? collect();
                     $url = route('stripe-webhooks.debug.show', $call->id);
                     $dup = route('stripe-webhooks.debug.index', ['duplicate' => $call->id]);
+                    $isNoOp = $call->status === 'processed' && $rowCounts->isEmpty();
                 @endphp
                 <tr>
                     <td><a href="{{ $url }}">{{ $call->id }}</a></td>
                     <td><a href="{{ $url }}"><code>{{ $call->stripe_event_id }}</code></a></td>
                     <td><code>{{ $call->type }}</code></td>
-                    <td><span class="badge {{ $call->status }}">{{ $call->status }}</span></td>
+                    <td>
+                        @if ($isNoOp)
+                            <span class="badge no-op" title="No handler matched — kit persisted for audit, no business action">no-op</span>
+                        @else
+                            <span class="badge {{ $call->status }}">{{ $call->status }}</span>
+                        @endif
+                    </td>
                     <td>{{ $call->source }}</td>
                     <td>{{ $call->config_key ?? '—' }}</td>
                     <td>
