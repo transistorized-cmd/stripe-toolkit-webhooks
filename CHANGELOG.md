@@ -7,17 +7,38 @@ and [Semantic Versioning](https://semver.org).
 ## [Unreleased]
 
 ### Added
-- `Support\PaymentOutcome` value object reads the actual payment result
-  from `data.object` (charge `paid` flag, payment_intent `status`,
-  checkout.session `payment_status`, invoice `status`, plus refund and
-  dispute event types). When paid is false, surfaces `failure_message`
-  / `failure_code` (charges) or `last_payment_error` (payment_intents).
-  More truthful than inferring from the event type name.
+- `Support\PaymentOutcome` + `Support\PaymentOutcomeState` enum
+  classify every Stripe payment-bearing event into one of four states
+  read directly from the payload's `data.object`:
+    - **Succeeded**: money moved (or `no_payment_required`)
+    - **Failed**: money didn't move, or moved and was reversed
+    - **InFlight**: still processing — async bank transfer, awaiting
+      3DS, auth pending capture, partially funded, under fraud review
+    - **Inapplicable**: event isn't about a payment
+
+  Coverage:
+    - `charge.*` (succeeded / captured / failed / pending / expired / refunded)
+    - `charge.dispute.*` (created / closed-won / closed-lost / funds_withdrawn / funds_reinstated)
+    - `payment_intent.*` (succeeded / payment_failed / canceled /
+      processing / requires_action / requires_confirmation / requires_capture)
+    - `checkout.session.*` (completed / async_payment_succeeded /
+      async_payment_failed / expired)
+    - `invoice.*` (paid / payment_succeeded / payment_failed /
+      payment_action_required / finalization_failed / marked_uncollectible / voided)
+    - `refund.*` (top-level Refund object — succeeded / failed /
+      pending / canceled)
+    - `radar.early_fraud_warning.created`
+    - `review.opened`, `review.closed` (approved / refunded / disputed)
+
+  When state is failure, surfaces the matching `failure_message`,
+  `failure_code`, `cancellation_reason`, `last_payment_error`, or
+  `failure_reason` from the payload — so downstream UIs and alerts
+  carry the actual reason instead of "see Stripe Dashboard".
 - Inspector renders a prominent `✓ Payment succeeded` /
-  `✗ Payment did not succeed: <reason>` callout on the detail page when
-  the payload carries a payment outcome, plus a small inline
-  `✓ paid` / `✗ <code>` annotation next to each row's event type in
-  the table.
+  `✗ Payment did not succeed: <reason>` / `⏳ Payment in flight: <reason>`
+  callout on the detail page when the payload carries a payment
+  outcome, plus a small inline `✓ paid` / `✗ <code>` / `⏳ in flight`
+  annotation next to each row's event type in the table.
 - Inspector now distinguishes "processed with handlers" from "processed
   without handlers" via separate badges (green `processed` vs gray
   `no-op`).

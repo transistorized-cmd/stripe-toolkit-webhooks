@@ -15,19 +15,25 @@
     @endphp
 
     @if ($payment->applies())
-        <div class="outcome-card {{ $payment->isSuccess() ? 'success' : 'failure' }}">
-            @if ($payment->isSuccess())
-                <p class="headline">✓ Payment succeeded</p>
-                <p class="reason">Stripe reports this event ended in a successful payment.</p>
-            @else
-                <p class="headline">✗ Payment did not succeed</p>
-                <p class="reason">
-                    {{ $payment->message ?? 'Stripe reports this event represents a failed, refunded, or disputed payment.' }}
-                    @if ($payment->code)
-                        <code>{{ $payment->code }}</code>
-                    @endif
-                </p>
-            @endif
+        @php
+            $cardClass = $payment->isSuccess() ? 'success' : ($payment->isFailure() ? 'failure' : 'pending');
+            $headline = $payment->isSuccess()
+                ? '✓ Payment succeeded'
+                : ($payment->isFailure() ? '✗ Payment did not succeed' : '⏳ Payment in flight');
+            $defaultReason = $payment->isSuccess()
+                ? 'Stripe reports this event ended in a successful payment.'
+                : ($payment->isFailure()
+                    ? 'Stripe reports this event represents a failed, refunded, or disputed payment.'
+                    : 'Stripe reports this payment is still in progress (async, awaiting customer action, auth pending capture, or under review).');
+        @endphp
+        <div class="outcome-card {{ $cardClass }}">
+            <p class="headline">{{ $headline }}</p>
+            <p class="reason">
+                {{ $payment->message ?? $defaultReason }}
+                @if ($payment->code)
+                    <code>{{ $payment->code }}</code>
+                @endif
+            </p>
         </div>
     @endif
 

@@ -82,6 +82,8 @@
                             <span class="outcome-success" title="Payment succeeded according to the payload">paid</span>
                         @elseif ($payment->isFailure())
                             <span class="outcome-failure" title="{{ $payment->message ?? 'Payment failure — see detail page' }}">{{ $payment->code ?? 'not paid' }}</span>
+                        @elseif ($payment->isInFlight())
+                            <span class="outcome-pending" title="{{ $payment->message ?? 'Still processing — see detail page' }}">in flight</span>
                         @endif
                     </td>
                     <td>

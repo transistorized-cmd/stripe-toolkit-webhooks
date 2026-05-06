@@ -54,7 +54,7 @@
         .badge.processing { background: var(--warn); }
         .badge.processed { background: var(--good); }
         .badge.no-op { background: var(--grey); color: var(--text); border: 1px solid var(--border); }
-        .outcome-success, .outcome-failure {
+        .outcome-success, .outcome-failure, .outcome-pending {
             display: inline-block;
             margin-left: 6px;
             font-size: 10px;
@@ -67,6 +67,8 @@
         .outcome-success::before { content: "✓ "; }
         .outcome-failure { color: var(--bad); }
         .outcome-failure::before { content: "✗ "; }
+        .outcome-pending { color: var(--warn); }
+        .outcome-pending::before { content: "⏳ "; }
         .outcome-card {
             margin: 16px 0;
             padding: 16px 20px;
@@ -83,6 +85,11 @@
             border-color: var(--bad);
             border-left-width: 4px;
         }
+        .outcome-card.pending {
+            background: rgba(245, 158, 11, 0.06);
+            border-color: var(--warn);
+            border-left-width: 4px;
+        }
         .outcome-card .headline {
             font-size: 16px;
             font-weight: 700;
@@ -90,6 +97,7 @@
         }
         .outcome-card.success .headline { color: var(--good); }
         .outcome-card.failure .headline { color: var(--bad); }
+        .outcome-card.pending .headline { color: var(--warn); }
         .outcome-card .reason {
             font-size: 13px;
             color: var(--text);
