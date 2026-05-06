@@ -7,6 +7,16 @@ and [Semantic Versioning](https://semver.org).
 ## [Unreleased]
 
 ### Added
+- `Support\EventOutcome` enum (`Success` / `Failure` / `Neutral`)
+  classifies event types by their business semantic. Used by the
+  inspector to flag failure-shape events visually so users don't read
+  "no handler ran" as "everything's fine" when the underlying event is
+  a decline, refund, dispute, or cancellation.
+- Inspector now shows a red `● failure` annotation next to the type
+  on rows / detail header for events whose type matches that pattern.
+- Inspector now distinguishes "processed with handlers" from "processed
+  without handlers" via separate badges (green `processed` vs gray
+  `no-op`).
 - `Support\StripeReconciler` — refetches Stripe objects and (optionally)
   re-runs handlers against fresh state. Two entry points: `fetchObject($id)`
   for app code with a stored Stripe id, and `reconcile(WebhookCall)` for

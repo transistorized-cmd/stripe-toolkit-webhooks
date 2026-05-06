@@ -71,11 +71,17 @@
                     $url = route('stripe-webhooks.debug.show', $call->id);
                     $dup = route('stripe-webhooks.debug.index', ['duplicate' => $call->id]);
                     $isNoOp = $call->status === 'processed' && $rowCounts->isEmpty();
+                    $outcome = \TransistorizedCmd\StripeToolkit\Webhooks\Support\EventOutcome::classify($call->type);
                 @endphp
                 <tr>
                     <td><a href="{{ $url }}">{{ $call->id }}</a></td>
                     <td><a href="{{ $url }}"><code>{{ $call->stripe_event_id }}</code></a></td>
-                    <td><code>{{ $call->type }}</code></td>
+                    <td>
+                        <code>{{ $call->type }}</code>
+                        @if ($outcome === \TransistorizedCmd\StripeToolkit\Webhooks\Support\EventOutcome::Failure)
+                            <span class="outcome-failure" title="This event type signals a negative business outcome (declined, canceled, refunded, expired, …)">failure</span>
+                        @endif
+                    </td>
                     <td>
                         @if ($isNoOp)
                             <span class="badge no-op" title="No handler matched — kit persisted for audit, no business action">no-op</span>

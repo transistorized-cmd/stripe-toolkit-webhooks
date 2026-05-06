@@ -11,6 +11,8 @@
 @section('content')
     @php
         $payloadJson = json_encode($call->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $outcome = \TransistorizedCmd\StripeToolkit\Webhooks\Support\EventOutcome::classify($call->type);
+        $isFailureOutcome = $outcome === \TransistorizedCmd\StripeToolkit\Webhooks\Support\EventOutcome::Failure;
     @endphp
 
     <a href="{{ route('stripe-webhooks.debug.index') }}" class="back">&larr; all webhooks</a>
@@ -25,7 +27,12 @@
                 <dt>id</dt>
                 <dd><code>{{ $call->stripe_event_id }}</code></dd>
                 <dt>type</dt>
-                <dd><code>{{ $call->type }}</code></dd>
+                <dd>
+                    <code>{{ $call->type }}</code>
+                    @if ($isFailureOutcome)
+                        <span class="outcome-failure" title="This event type signals a negative business outcome">failure event</span>
+                    @endif
+                </dd>
                 <dt>status</dt>
                 <dd>
                     @php

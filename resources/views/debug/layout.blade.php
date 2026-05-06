@@ -54,6 +54,17 @@
         .badge.processing { background: var(--warn); }
         .badge.processed { background: var(--good); }
         .badge.no-op { background: var(--grey); color: var(--text); border: 1px solid var(--border); }
+        .outcome-failure {
+            display: inline-block;
+            margin-left: 6px;
+            color: var(--bad);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            vertical-align: middle;
+        }
+        .outcome-failure::before { content: "● "; }
         .badge.failed { background: var(--warn); }
         .badge.dead_letter { background: var(--bad); }
         .badge.pending { background: var(--grey); }
