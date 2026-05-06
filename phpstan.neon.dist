@@ -1,0 +1,16 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - src
+    excludePaths:
+        - vendor
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # `view-string` is a Larastan-specific assertion for views; we use
+        # the kit's namespaced views which Larastan doesn't index by default.
+        - identifier: argument.type
+          paths:
+              - src/Http/Controllers/DebugController.php

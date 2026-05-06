@@ -1,0 +1,75 @@
+{
+    "name": "transistorized-cmd/stripe-toolkit-webhooks",
+    "description": "Bulletproof Stripe webhook handling for Laravel — the first module of The Complete Stripe Toolkit. Idempotency, store-then-process, queue dispatch, snapshot + thin events.",
+    "keywords": [
+        "laravel",
+        "stripe",
+        "stripe-toolkit",
+        "webhooks",
+        "idempotency",
+        "queue",
+        "thin-events",
+        "event-destinations"
+    ],
+    "homepage": "https://github.com/transistorized-cmd/stripe-toolkit-webhooks",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jose Luis Pellicer",
+            "email": "jlpellicerm@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/database": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/http": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/queue": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/routing": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/support": "^11.0 || ^12.0 || ^13.0",
+        "spatie/laravel-package-tools": "^1.16",
+        "stripe/stripe-php": "^15.0 || ^16.0 || ^17.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.0",
+        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0"
+    },
+    "suggest": {
+        "filament/filament": "Required for the Filament admin panel (Pro tier)."
+    },
+    "autoload": {
+        "psr-4": {
+            "TransistorizedCmd\\StripeToolkit\\Webhooks\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TransistorizedCmd\\StripeToolkit\\Webhooks\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "TransistorizedCmd\\StripeToolkit\\Webhooks\\StripeWebhooksServiceProvider"
+            ],
+            "aliases": {
+                "StripeWebhook": "TransistorizedCmd\\StripeToolkit\\Webhooks\\Facades\\StripeWebhook"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

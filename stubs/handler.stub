@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Stripe\Handlers;
+
+use Illuminate\Support\Facades\Log;
+use TransistorizedCmd\StripeToolkit\Webhooks\Attributes\StripeEvent;
+use TransistorizedCmd\StripeToolkit\Webhooks\Contracts\WebhookEventDTO;
+use TransistorizedCmd\StripeToolkit\Webhooks\StripeWebhookHandler;
+
+/**
+ * Sample handler — replace with your business logic.
+ *
+ * The #[StripeEvent('payment_intent.succeeded')] attribute auto-registers
+ * this handler with the kit. Thanks to type normalization, it also matches
+ * the thin variant `v1.payment_intent.succeeded` if you migrate to Stripe
+ * Event Destinations later.
+ *
+ * Anything you do here runs inside a queued job. It will be retried up to
+ * $tries times with the backoff schedule below, then dead-lettered. Make
+ * the work idempotent or guard with your own business-level dedupe — Stripe
+ * legitimately re-delivers events, sometimes days later.
+ */
+#[StripeEvent('payment_intent.succeeded')]
+class HandlePaymentIntentSucceeded extends StripeWebhookHandler
+{
+    public int $tries = 5;
+
+    /** @var array<int,int> */
+    public array $backoff = [60, 300, 900, 1800, 3600];
+
+    public function handle(WebhookEventDTO $event): void
+    {
+        /** @var \Stripe\PaymentIntent $intent */
+        $intent = $event->relatedObject();
+
+        // Replace this with the real fulfilment for your app — mark the
+        // order paid, send the receipt, grant entitlements, etc.
+        Log::info('payment_intent.succeeded received', [
+            'event_id' => $event->id(),
+            'intent_id' => $intent->id,
+            'amount' => $intent->amount,
+            'currency' => $intent->currency,
+            'customer' => $intent->customer,
+            'account_id' => $event->accountId(),  // null unless Connect
+        ]);
+    }
+}
