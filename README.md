@@ -209,6 +209,32 @@ php artisan queue:work --queue=stripe-webhooks
 
 Done. Your endpoint is live.
 
+### Choosing a Stripe API version
+
+When you register the endpoint in **Stripe Dashboard → Developers →
+Webhooks** (or via `stripe listen`), Stripe asks you to pick an API
+version. The choice affects the **shape of the payloads** Stripe sends
+to this endpoint — Stripe locks the version per endpoint, so it
+becomes a one-way migration switch independent of your account
+default.
+
+| Option | Use it when |
+|---|---|
+| **Latest stable** (e.g. `2026-04-22.dahlia` at time of writing) | New endpoints / new accounts. Aligns the payload shape with the most recent SDK and gets you all the modern fields. |
+| **Your account's current version** (e.g. `2023-10-16`) | You're integrating into an existing app pinned to that version. Match it so your endpoint's payloads match what `Stripe::PaymentIntent::retrieve()` returns elsewhere in your code. |
+| **`.preview`** versions | Avoid for production. They include features in evolution; the SDK may not deserialize newly-added fields cleanly. |
+
+The kit itself is version-agnostic — it persists `api_version` on every
+`stripe_webhook_calls` row for auditing but doesn't branch on it. Your
+handlers receive typed `\Stripe\…` objects either way; field
+availability follows whatever version the endpoint is locked to.
+
+> **Note:** Stripe's "locked per endpoint" semantics are useful for
+> gradual migrations. You can pin one endpoint to `dahlia` to start
+> receiving new fields, while the rest of your account stays on
+> `2023-10-16`. When you're ready, upgrade your account default to
+> match.
+
 ---
 
 ## Your first handler
