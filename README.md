@@ -14,8 +14,8 @@
 > a single typed DTO.
 
 > **Status:** `v1.0.0-rc.1`. Free core feature-complete, 51 Pest tests
-> green, used in production by [TicketFairy](https://ticketfairy.com).
-> Pro module ships separately.
+> green. Distilled from 10+ years of shipping Laravel and Stripe
+> integrations across production SaaS apps. Pro module ships separately.
 
 ---
 
@@ -572,8 +572,9 @@ Security issues: please email rather than file publicly.
 ## Credits
 
 - Built by [Jose Luis Pellicer](https://github.com/transistorized-cmd)
-  ([transistorized-cmd](https://github.com/transistorized-cmd)).
-- Battle-tested on TicketFairy's production traffic.
+  ([transistorized-cmd](https://github.com/transistorized-cmd)) — 10+
+  years building Laravel applications, with deep Stripe integration
+  work across multiple production SaaS products.
 - Inspired by the gaps in `spatie/laravel-stripe-webhooks` — which
   remains a great default for simpler use cases.
 
