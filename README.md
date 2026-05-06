@@ -368,6 +368,75 @@ silent failure.
 
 ---
 
+## Reconciling with Stripe when webhooks fail
+
+Webhooks are best-effort: networks blip, deploys race, signing secrets
+drift, and Stripe eventually gives up retrying. When state has
+diverged, ask the API directly — Stripe is always the source of truth.
+
+The kit ships a small `StripeReconciler` for this. Two patterns:
+
+### Pattern A — app reconcile (the demo uses this)
+
+You have a stored Stripe id (`stripe_checkout_session_id`,
+`stripe_payment_intent_id`, …) on your own model. Fetch the live state
+and apply your business logic:
+
+```php
+use TransistorizedCmd\StripeToolkit\Webhooks\Support\StripeReconciler;
+
+public function reconcile(Order $order, StripeReconciler $reconciler): RedirectResponse
+{
+    /** @var \Stripe\Checkout\Session $session */
+    $session = $reconciler->fetchObject($order->stripe_checkout_session_id);
+
+    if ($session->payment_status === 'paid') {
+        $order->markPaid(/* … */);
+    }
+
+    return back();
+}
+```
+
+`fetchObject($id)` routes by id prefix (`pi_`, `ch_`, `cs_`, `cus_`,
+`sub_`, `in_`, `evt_`) and returns the typed `\Stripe\…` instance.
+Implements the kit's `Contracts\StripeObjectFetcher` interface — bind
+your own implementation if you need extra prefixes or different SDK
+options (Stripe Connect's `stripe_account` header, etc.).
+
+### Pattern B — re-run handlers against fresh state
+
+You have a stored `WebhookCall` row that's stuck — the call landed but
+processing failed, or the handler was deployed broken and you've since
+fixed it. Tell the kit to refetch the related object and re-run the
+event's handlers:
+
+```php
+$reconciler->reconcile($webhookCall);
+```
+
+The kit synthesises a snapshot DTO carrying the **fresh** related
+object and dispatches each handler synchronously. Handlers must be
+idempotent (the kit's docs already say so) — re-running on
+already-reconciled state is a no-op. A `WebhookReconciled` event is
+fired so you can record audit trails.
+
+### Pro tier — operator tooling
+
+The free core ships the primitive. The Pro module wraps it in
+operator-grade tooling:
+
+- `php artisan stripe-webhooks:reconcile {id|--pending|--older=10m}`
+  for batch recovery
+- A "Reconcile" action on the Filament `WebhookCallResource`
+- Audit log of who ran what reconcile and when
+- Throttling and back-pressure for large batches against Stripe rate limits
+
+For local recovery and one-off operator workflows, the free primitive
+is enough. Reach for Pro when you need the dashboard.
+
+---
+
 ## Debug inspector
 
 In `local`/`testing` environments the kit exposes a read-only Blade UI

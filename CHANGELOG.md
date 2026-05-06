@@ -6,6 +6,28 @@ and [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Added
+- `Support\StripeReconciler` — refetches Stripe objects and (optionally)
+  re-runs handlers against fresh state. Two entry points: `fetchObject($id)`
+  for app code with a stored Stripe id, and `reconcile(WebhookCall)` for
+  stuck webhook rows. Uses the new `Contracts\StripeObjectFetcher`
+  interface so users can swap the underlying transport.
+- `Support\SdkStripeObjectFetcher` — default implementation routing
+  by id prefix (`pi_`, `ch_`, `cs_`, `cus_`, `sub_`, `in_`, `evt_`).
+- `Events\WebhookReconciled` — fired after a reconcile so apps can
+  record audit trails.
+- ServiceProvider auto-registers `\Stripe\StripeClient` from
+  `services.stripe.secret` (via `bindIf` so existing bindings win).
+
+### Changed
+- `StripeWebhookHandler::$backoff` type relaxed from `array|int` to
+  just `array`. Aligns with the SPEC's documented signature and removes
+  a foot-gun where child classes declaring `public array $backoff = …`
+  hit a fatal type-mismatch on instantiation. Single-attempt backoff is
+  expressed as a single-element array (`[60]`).
+- `RunStripeHandler::resolveBackoff()` simplified to remove the
+  now-impossible `is_int` branch.
+
 ## [1.0.0-rc.1] — 2026-05-06
 
 First release candidate of the free core. Free module of the wider

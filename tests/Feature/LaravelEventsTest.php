@@ -18,7 +18,7 @@ class NonTerminalFailHandler extends StripeWebhookHandler
 {
     public int $tries = 3;
 
-    public array|int $backoff = 0;
+    public array $backoff = [0];
 
     public function handle(WebhookEventDTO $event): void
     {

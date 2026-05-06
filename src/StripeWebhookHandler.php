@@ -22,8 +22,8 @@ abstract class StripeWebhookHandler
 {
     public int $tries = 3;
 
-    /** @var array<int,int>|int */
-    public array|int $backoff = [60, 300, 900];
+    /** @var array<int,int> */
+    public array $backoff = [60, 300, 900];
 
     abstract public function handle(WebhookEventDTO $event): void;
 }

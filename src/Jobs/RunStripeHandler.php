@@ -175,10 +175,6 @@ class RunStripeHandler implements ShouldQueue
     {
         $backoff = $handler->backoff ?? [60, 300, 900];
 
-        if (is_int($backoff)) {
-            return $backoff;
-        }
-
         if ($backoff === []) {
             return 60;
         }

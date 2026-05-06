@@ -6,12 +6,16 @@ namespace TransistorizedCmd\StripeToolkit\Webhooks;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Stripe\StripeClient;
 use TransistorizedCmd\StripeToolkit\Webhooks\Console\Commands\InstallCommand;
 use TransistorizedCmd\StripeToolkit\Webhooks\Console\Commands\MigrateFromSpatieCommand;
 use TransistorizedCmd\StripeToolkit\Webhooks\Console\Commands\PruneCommand;
+use TransistorizedCmd\StripeToolkit\Webhooks\Contracts\StripeObjectFetcher;
 use TransistorizedCmd\StripeToolkit\Webhooks\Routing\WebhookRouter;
 use TransistorizedCmd\StripeToolkit\Webhooks\Support\HandlerDiscovery;
+use TransistorizedCmd\StripeToolkit\Webhooks\Support\SdkStripeObjectFetcher;
 use TransistorizedCmd\StripeToolkit\Webhooks\Support\SignatureVerifier;
+use TransistorizedCmd\StripeToolkit\Webhooks\Support\StripeReconciler;
 
 class StripeWebhooksServiceProvider extends PackageServiceProvider
 {
@@ -36,6 +40,27 @@ class StripeWebhooksServiceProvider extends PackageServiceProvider
         $this->app->singleton(SignatureVerifier::class);
         $this->app->singleton(HandlerDiscovery::class);
         $this->app->singleton(WebhookRouter::class);
+
+        // Stripe SDK client — bindIf so the user's existing binding wins.
+        // Falls back to `services.stripe.secret`, the Laravel convention.
+        $this->app->bindIf(StripeClient::class, function (): StripeClient {
+            $secret = config('services.stripe.secret');
+            if (! is_string($secret) || $secret === '') {
+                throw new \RuntimeException(
+                    'Stripe SDK secret missing — set services.stripe.secret '
+                    .'(usually via STRIPE_SECRET in .env) or bind '
+                    .StripeClient::class.' explicitly in your container.'
+                );
+            }
+
+            return new StripeClient($secret);
+        });
+
+        // Reconcile facility — bindIf again so users can swap the fetcher
+        // (e.g. with a fake in tests, or one that uses Stripe Connect's
+        // stripe_account option).
+        $this->app->bindIf(StripeObjectFetcher::class, SdkStripeObjectFetcher::class);
+        $this->app->singleton(StripeReconciler::class);
     }
 
     public function packageBooted(): void
