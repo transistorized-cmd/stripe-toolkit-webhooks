@@ -35,6 +35,13 @@
                 @endif
             </p>
         </div>
+    @else
+        <div class="outcome-card" style="border-left-width: 4px; border-left-color: var(--muted); background: rgba(100, 116, 139, 0.04);">
+            <p class="headline" style="color: var(--muted);">○ Not a payment event</p>
+            <p class="reason" style="color: var(--muted);">
+                Informational event (customer lifecycle, configuration, payment method registration, …) — no payment outcome to report.
+            </p>
+        </div>
     @endif
 
     <a href="{{ route('stripe-webhooks.debug.index') }}" class="back">&larr; all webhooks</a>

@@ -84,6 +84,8 @@
                             <span class="outcome-failure" title="{{ $payment->message ?? 'Payment failure — see detail page' }}">{{ $payment->code ?? 'not paid' }}</span>
                         @elseif ($payment->isInFlight())
                             <span class="outcome-pending" title="{{ $payment->message ?? 'Still processing — see detail page' }}">in flight</span>
+                        @else
+                            <span class="outcome-neutral" title="Not a payment-bearing event (informational, configuration, customer lifecycle, etc.)">n/a</span>
                         @endif
                     </td>
                     <td>

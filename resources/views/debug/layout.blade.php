@@ -54,7 +54,7 @@
         .badge.processing { background: var(--warn); }
         .badge.processed { background: var(--good); }
         .badge.no-op { background: var(--grey); color: var(--text); border: 1px solid var(--border); }
-        .outcome-success, .outcome-failure, .outcome-pending {
+        .outcome-success, .outcome-failure, .outcome-pending, .outcome-neutral {
             display: inline-block;
             margin-left: 6px;
             font-size: 10px;
@@ -69,6 +69,8 @@
         .outcome-failure::before { content: "✗ "; }
         .outcome-pending { color: var(--warn); }
         .outcome-pending::before { content: "⏳ "; }
+        .outcome-neutral { color: var(--muted); font-weight: 500; }
+        .outcome-neutral::before { content: "○ "; }
         .outcome-card {
             margin: 16px 0;
             padding: 16px 20px;
