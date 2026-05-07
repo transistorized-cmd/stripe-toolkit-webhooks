@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Stripe\V2\Event;
 use TransistorizedCmd\StripeToolkit\Webhooks\Adapters\EventResolver;
 use TransistorizedCmd\StripeToolkit\Webhooks\DTO\SnapshotEventDTO;
 use TransistorizedCmd\StripeToolkit\Webhooks\DTO\ThinEventDTO;
@@ -32,7 +33,7 @@ it('routes a snapshot payload to the snapshot adapter', function () {
 });
 
 it('routes a thin payload to the thin adapter', function () {
-    if (! class_exists(\Stripe\V2\Event::class)) {
+    if (! class_exists(Event::class)) {
         $this->markTestSkipped('Thin events require stripe/stripe-php ^17.');
     }
 
@@ -71,7 +72,7 @@ it('throws UnrecognizedPayloadException when payload is malformed JSON', functio
 });
 
 it('throws InvalidSignatureException when the thin signature does not match', function () {
-    if (! class_exists(\Stripe\V2\Event::class)) {
+    if (! class_exists(Event::class)) {
         $this->markTestSkipped('Thin events require stripe/stripe-php ^17.');
     }
 
