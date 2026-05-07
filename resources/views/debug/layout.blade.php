@@ -292,6 +292,10 @@
     </style>
 </head>
 <body>
+{{-- Optional slot for a host-app banner (e.g. service health). Apps
+     that want it can do `View::share('globalBanner', $html)` from
+     a service provider; the kit ships it empty. --}}
+{!! $globalBanner ?? '' !!}
 <header>
     <h1>
         <a href="{{ route('stripe-webhooks.debug.index') }}" style="color: var(--text);">
