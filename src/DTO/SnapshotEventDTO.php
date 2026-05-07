@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Stripe\Event as StripeEvent;
 use TransistorizedCmd\StripeToolkit\Webhooks\Contracts\EventSource;
 use TransistorizedCmd\StripeToolkit\Webhooks\Contracts\WebhookEventDTO;
+use TransistorizedCmd\StripeToolkit\Webhooks\Support\PayloadEncoder;
 use TransistorizedCmd\StripeToolkit\Webhooks\Support\TypeNormalizer;
 
 final class SnapshotEventDTO implements WebhookEventDTO
@@ -26,9 +27,8 @@ final class SnapshotEventDTO implements WebhookEventDTO
     public static function fromArray(array $payload): self
     {
         $event = StripeEvent::constructFrom($payload);
-        $raw = (string) json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        return new self($event, $raw);
+        return new self($event, PayloadEncoder::encode($payload));
     }
 
     public function id(): string

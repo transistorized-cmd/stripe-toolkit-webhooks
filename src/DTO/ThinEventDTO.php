@@ -10,6 +10,7 @@ use Stripe\V2\Event as V2Event;
 use TransistorizedCmd\StripeToolkit\Webhooks\Contracts\EventSource;
 use TransistorizedCmd\StripeToolkit\Webhooks\Contracts\WebhookEventDTO;
 use TransistorizedCmd\StripeToolkit\Webhooks\Exceptions\UnsupportedSdkVersionException;
+use TransistorizedCmd\StripeToolkit\Webhooks\Support\PayloadEncoder;
 use TransistorizedCmd\StripeToolkit\Webhooks\Support\TypeNormalizer;
 
 /**
@@ -35,12 +36,25 @@ final class ThinEventDTO implements WebhookEventDTO
     ) {}
 
     /**
-     * Hydrate from a stored payload. Picks the most specific V2 event
-     * subclass available in the installed SDK, falling back to the base.
+     * Hydrate from a stored payload (e.g. `WebhookCall::payload`) when
+     * the original raw string is no longer at hand; the canonical JSON
+     * representation is recomputed.
      *
      * @param  array<string,mixed>  $payload
      */
     public static function fromArray(array $payload): self
+    {
+        return self::fromPayload($payload, PayloadEncoder::encode($payload));
+    }
+
+    /**
+     * Build the DTO from a decoded payload plus its raw bytes. Used by
+     * `ThinEventAdapter` (which already has the verified raw string in
+     * hand) and by `fromArray()` (which reconstructs it).
+     *
+     * @param  array<string,mixed>  $payload
+     */
+    public static function fromPayload(array $payload, string $rawPayload): self
     {
         if (! class_exists(V2Event::class)) {
             throw UnsupportedSdkVersionException::thinEventsNeedV17();
@@ -49,13 +63,17 @@ final class ThinEventDTO implements WebhookEventDTO
         $type = (string) ($payload['type'] ?? '');
         $class = self::resolveEventClass($type);
         $event = $class::constructFrom($payload);
-        $raw = (string) json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        return new self($event, $raw);
+        return new self($event, $rawPayload);
     }
 
-    /** @return class-string */
-    private static function resolveEventClass(string $type): string
+    /**
+     * Resolve the most specific V2 event subclass available in the
+     * installed SDK for `$type`, falling back to the base `V2\Event`.
+     *
+     * @return class-string
+     */
+    public static function resolveEventClass(string $type): string
     {
         if (class_exists(EventTypes::class) && isset(EventTypes::thinEventMapping[$type])) {
             return EventTypes::thinEventMapping[$type];

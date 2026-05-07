@@ -110,11 +110,11 @@ class HandlerDiscovery
     {
         $contents = (string) file_get_contents($file->getRealPath());
 
-        if (! preg_match('/^namespace\s+([^;]+);/m', $contents, $nsMatch)) {
+        if (! preg_match('/^\s*namespace\s+([^;]+);/m', $contents, $nsMatch)) {
             return null;
         }
 
-        if (! preg_match('/^(?:final\s+|abstract\s+)?class\s+([A-Za-z_][A-Za-z0-9_]*)/m', $contents, $classMatch)) {
+        if (! preg_match('/^\s*(?:final\s+|abstract\s+)?class\s+([A-Za-z_][A-Za-z0-9_]*)/m', $contents, $classMatch)) {
             return null;
         }
 

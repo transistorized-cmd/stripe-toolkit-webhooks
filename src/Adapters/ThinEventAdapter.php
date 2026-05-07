@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace TransistorizedCmd\StripeToolkit\Webhooks\Adapters;
 
 use Stripe\Exception\SignatureVerificationException;
-use Stripe\Util\EventTypes;
 use Stripe\V2\Event as V2Event;
 use Stripe\WebhookSignature;
 use TransistorizedCmd\StripeToolkit\Webhooks\DTO\ThinEventDTO;
@@ -63,20 +62,6 @@ class ThinEventAdapter
             throw UnrecognizedPayloadException::notJson($e->getMessage());
         }
 
-        $type = (string) ($payload['type'] ?? '');
-        $class = $this->resolveEventClass($type);
-        $event = $class::constructFrom($payload);
-
-        return new ThinEventDTO($event, $rawPayload);
-    }
-
-    /** @return class-string */
-    private function resolveEventClass(string $type): string
-    {
-        if (class_exists(EventTypes::class) && isset(EventTypes::thinEventMapping[$type])) {
-            return EventTypes::thinEventMapping[$type];
-        }
-
-        return V2Event::class;
+        return ThinEventDTO::fromPayload($payload, $rawPayload);
     }
 }
