@@ -9,7 +9,47 @@
         $iframeSrc = $duplicateFromId
             ? route('stripe-webhooks.debug.form', ['from' => $duplicateFromId])
             : route('stripe-webhooks.debug.form');
+        $triggerScenarios = [
+            ['scenario' => 'success',            'label' => 'Successful payment',  'class' => 'outcome-success', 'icon' => '✓'],
+            ['scenario' => 'declined',           'label' => 'Declined card',       'class' => 'outcome-failure', 'icon' => '✗'],
+            ['scenario' => 'insufficient_funds', 'label' => 'Insufficient funds',  'class' => 'outcome-failure', 'icon' => '✗'],
+            ['scenario' => 'requires_action',    'label' => 'Requires 3DS',        'class' => 'outcome-pending', 'icon' => '⏳'],
+            ['scenario' => 'refund_last',        'label' => 'Refund last paid',    'class' => 'outcome-failure', 'icon' => '↻'],
+            ['scenario' => 'customer_created',   'label' => 'Create customer',     'class' => 'outcome-neutral', 'icon' => '○'],
+        ];
     @endphp
+
+    @if (session('trigger_message') || session('trigger_error'))
+        <div class="card" style="margin-bottom: 12px; padding: 12px 16px; font-size: 13px; border-left: 4px solid {{ session('trigger_error') ? 'var(--bad)' : 'var(--good)' }}; background: {{ session('trigger_error') ? 'rgba(239, 68, 68, 0.06)' : 'rgba(34, 197, 94, 0.06)' }};">
+            <strong style="color: {{ session('trigger_error') ? 'var(--bad)' : 'var(--good)' }};">
+                {{ session('trigger_error') ? '✗ Trigger failed' : '✓ Triggered' }}:
+            </strong>
+            {{ session('trigger_error') ?? session('trigger_message') }}
+            @if (session('trigger_message'))
+                <span class="muted"> · webhook(s) should land within seconds.</span>
+            @endif
+        </div>
+    @endif
+
+    <div class="card" style="margin-bottom: 16px; padding: 14px 18px;">
+        <h2 style="margin-bottom: 10px;">Trigger a real Stripe event</h2>
+        <p class="muted" style="font-size: 12px; margin: 0 0 12px;">
+            Each button hits the Stripe API to create the resource that produces the desired webhook(s).
+            Stripe then delivers them through your `stripe listen` (or configured endpoint) — full pipeline.
+            Distinct from the iframe form below, which only signs payloads locally.
+        </p>
+        <form method="POST" action="{{ route('stripe-webhooks.debug.trigger') }}" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 0;">
+            @csrf
+            @foreach ($triggerScenarios as $s)
+                <button type="submit" name="scenario" value="{{ $s['scenario'] }}"
+                        class="trigger-btn {{ $s['class'] }}"
+                        title="Scenario: {{ $s['scenario'] }}">
+                    {{ $s['icon'] }} {{ $s['label'] }}
+                </button>
+            @endforeach
+        </form>
+    </div>
+
     <div class="card" style="margin-bottom: 16px; padding: 0; overflow: hidden;">
         <iframe
             id="webhookFormFrame"

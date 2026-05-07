@@ -7,6 +7,20 @@ and [Semantic Versioning](https://semver.org).
 ## [Unreleased]
 
 ### Added
+- Inspector now ships **trigger buttons** that hit the Stripe API to
+  create real resources producing specific webhooks. Six scenarios:
+  ✓ successful payment (`pm_card_visa`), ✗ declined card
+  (`pm_card_chargeDeclined`), ✗ insufficient funds, ⏳ requires 3DS,
+  ↻ refund last paid charge, ○ create customer (no payment, tests the
+  neutral indicator). Distinct from the `_send` form which signs
+  payloads locally and never touches Stripe — these triggers exercise
+  the full pipeline (Stripe API → CLI/tunnel → endpoint → kit).
+  POST `/_trigger` route, `DebugController::trigger()` + helper
+  methods. Production-safe (whole inspector is dev-mode-only).
+- Inspector adds an `○ n/a` neutral indicator (gray) for events that
+  carry no payment outcome (customer.*, payment_method.*, product.*,
+  etc.). Distinct from `⏳ in flight` (payment in progress) and the
+  previously empty cell that left readers uncertain.
 - `Support\PaymentOutcome` + `Support\PaymentOutcomeState` enum
   classify every Stripe payment-bearing event into one of four states
   read directly from the payload's `data.object`:

@@ -14,6 +14,7 @@ Route::middleware(config('stripe-webhooks.debug.middleware', ['web']))
         Route::get('/', [DebugController::class, 'index'])->name('index');
         Route::get('_form', [DebugController::class, 'form'])->name('form');
         Route::post('_send', [DebugController::class, 'send'])->name('send');
+        Route::post('_trigger', [DebugController::class, 'trigger'])->name('trigger');
         Route::get('/{id}', [DebugController::class, 'show'])
             ->whereNumber('id')
             ->name('show');

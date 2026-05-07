@@ -71,6 +71,30 @@
         .outcome-pending::before { content: "⏳ "; }
         .outcome-neutral { color: var(--muted); font-weight: 500; }
         .outcome-neutral::before { content: "○ "; }
+        .trigger-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text);
+            font-family: inherit;
+            transition: filter 0.1s ease;
+        }
+        .trigger-btn:hover { filter: brightness(1.4); }
+        .trigger-btn.outcome-success { color: var(--good); border-color: rgba(34, 197, 94, 0.4); }
+        .trigger-btn.outcome-success::before { content: ""; }
+        .trigger-btn.outcome-failure { color: var(--bad); border-color: rgba(239, 68, 68, 0.4); }
+        .trigger-btn.outcome-failure::before { content: ""; }
+        .trigger-btn.outcome-pending { color: var(--warn); border-color: rgba(245, 158, 11, 0.4); }
+        .trigger-btn.outcome-pending::before { content: ""; }
+        .trigger-btn.outcome-neutral { color: var(--muted); }
+        .trigger-btn.outcome-neutral::before { content: ""; }
         .outcome-card {
             margin: 16px 0;
             padding: 16px 20px;

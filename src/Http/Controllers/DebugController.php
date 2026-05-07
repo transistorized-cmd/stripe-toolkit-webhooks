@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace TransistorizedCmd\StripeToolkit\Webhooks\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Stripe\StripeClient;
 use TransistorizedCmd\StripeToolkit\Webhooks\Models\WebhookCall;
 use TransistorizedCmd\StripeToolkit\Webhooks\Models\WebhookHandlerRun;
 
@@ -416,5 +418,86 @@ class DebugController
             ->groupBy('status')
             ->pluck('total', 'status')
             ->all();
+    }
+
+    /**
+     * Trigger a real Stripe event via the API. Each scenario hits the
+     * Stripe SDK to create the resource that produces the desired
+     * webhook(s); Stripe then delivers them through whatever endpoint
+     * is configured (typically `stripe listen` in dev). Distinct from
+     * `_send` which only signs payloads locally and never reaches
+     * Stripe.
+     *
+     * Available scenarios:
+     *   - success            → pm_card_visa, charge.succeeded
+     *   - declined           → pm_card_chargeDeclined, charge.failed
+     *   - insufficient_funds → pm_card_chargeDeclinedInsufficientFunds
+     *   - requires_action    → pm_card_authenticationRequired
+     *   - refund_last        → refunds the most recent successful charge
+     *   - customer_created   → creates a Customer (no payment, tests inapplicable)
+     */
+    public function trigger(Request $request): RedirectResponse
+    {
+        $scenario = (string) $request->input('scenario');
+        $client = app(StripeClient::class);
+
+        try {
+            $message = match ($scenario) {
+                'success' => $this->triggerPayment($client, 'pm_card_visa', 'Successful charge'),
+                'declined' => $this->triggerPayment($client, 'pm_card_chargeDeclined', 'Generic decline'),
+                'insufficient_funds' => $this->triggerPayment($client, 'pm_card_chargeDeclinedInsufficientFunds', 'Insufficient funds'),
+                'requires_action' => $this->triggerPayment($client, 'pm_card_authenticationRequired', '3DS required'),
+                'refund_last' => $this->triggerRefund($client),
+                'customer_created' => $this->triggerCustomer($client),
+                default => throw new \DomainException("Unknown scenario [{$scenario}]."),
+            };
+
+            return redirect()->back()->with('trigger_message', $message);
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('trigger_error', $e->getMessage());
+        }
+    }
+
+    protected function triggerPayment(StripeClient $client, string $paymentMethod, string $label): string
+    {
+        $intent = $client->paymentIntents->create([
+            'amount' => 420,
+            'currency' => 'eur',
+            'payment_method' => $paymentMethod,
+            'payment_method_types' => ['card'],
+            'confirm' => true,
+            'description' => "Triggered from debug inspector — {$label}",
+            'metadata' => ['source' => 'stripe-toolkit-webhooks-inspector'],
+        ]);
+
+        return "{$label}: PaymentIntent {$intent->id} → status: {$intent->status}";
+    }
+
+    protected function triggerRefund(StripeClient $client): string
+    {
+        $charges = $client->charges->all(['limit' => 25]);
+
+        foreach ($charges->data as $charge) {
+            if (($charge->paid ?? false) && (int) ($charge->amount_refunded ?? 0) < (int) ($charge->amount ?? 0)) {
+                $refund = $client->refunds->create(['charge' => $charge->id]);
+
+                return "Refunded charge {$charge->id} for {$charge->amount} {$charge->currency} → refund {$refund->id}";
+            }
+        }
+
+        throw new \DomainException(
+            'No refundable charge found. Trigger a Successful payment first, then come back.'
+        );
+    }
+
+    protected function triggerCustomer(StripeClient $client): string
+    {
+        $customer = $client->customers->create([
+            'email' => 'demo+'.bin2hex(random_bytes(3)).'@example.test',
+            'description' => 'Created from debug inspector trigger',
+            'metadata' => ['source' => 'stripe-toolkit-webhooks-inspector'],
+        ]);
+
+        return "Created Customer {$customer->id} (no payment — tests the n/a indicator)";
     }
 }
