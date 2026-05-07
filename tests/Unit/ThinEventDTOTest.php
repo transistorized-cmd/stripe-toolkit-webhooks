@@ -7,6 +7,12 @@ use TransistorizedCmd\StripeToolkit\Webhooks\Contracts\EventSource;
 use TransistorizedCmd\StripeToolkit\Webhooks\DTO\ThinEventDTO;
 use TransistorizedCmd\StripeToolkit\Webhooks\Tests\Fixtures\Fixtures;
 
+beforeEach(function () {
+    if (! class_exists(V2Event::class)) {
+        $this->markTestSkipped('Thin events require stripe/stripe-php ^17 (no \Stripe\V2\Event in this matrix slot).');
+    }
+});
+
 it('hydrates thin event into a V2 event wrapper', function () {
     $payload = Fixtures::thinV1CustomerCreated();
     $dto = ThinEventDTO::fromArray($payload);

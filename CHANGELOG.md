@@ -6,6 +6,14 @@ and [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-05-07
+
+First stable release. Free core ships with snapshot+thin event handling,
+idempotency, queue dispatch, the debug inspector, reconciler, and
+prune/migrate tooling. See the matching [demo
+app](https://github.com/transistorized-cmd/stripe-toolkit-demo) for an
+end-to-end walkthrough.
+
 ### Added
 - Inspector now ships **trigger buttons** that hit the Stripe API to
   create real resources producing specific webhooks. Six scenarios:
@@ -76,6 +84,17 @@ and [Semantic Versioning](https://semver.org).
   expressed as a single-element array (`[60]`).
 - `RunStripeHandler::resolveBackoff()` simplified to remove the
   now-impossible `is_int` branch.
+- `Support\PayloadEncoder` extracted to centralize the canonical
+  `json_encode` invocation used when rehydrating DTOs from a stored
+  array payload (was duplicated across `SnapshotEventDTO::fromArray`
+  and `ThinEventDTO::fromArray`).
+- `ThinEventDTO::resolveEventClass()` is now public static and the
+  single source of truth for the V2 type→class lookup;
+  `ThinEventAdapter::resolve()` delegates via the new factory
+  `ThinEventDTO::fromPayload($payload, $rawPayload)` instead of
+  duplicating the logic.
+- `HandlerDiscovery::classFromFile()` regex tolerates leading whitespace
+  before `namespace`/`class` keywords.
 
 ## [1.0.0-rc.1] — 2026-05-06
 

@@ -32,6 +32,10 @@ it('routes a snapshot payload to the snapshot adapter', function () {
 });
 
 it('routes a thin payload to the thin adapter', function () {
+    if (! class_exists(\Stripe\V2\Event::class)) {
+        $this->markTestSkipped('Thin events require stripe/stripe-php ^17.');
+    }
+
     $payload = Fixtures::thinV1CustomerCreated();
     $body = SignedPayload::body($payload);
     $sig = SignedPayload::header($body, 'whsec_test_default');
@@ -67,6 +71,10 @@ it('throws UnrecognizedPayloadException when payload is malformed JSON', functio
 });
 
 it('throws InvalidSignatureException when the thin signature does not match', function () {
+    if (! class_exists(\Stripe\V2\Event::class)) {
+        $this->markTestSkipped('Thin events require stripe/stripe-php ^17.');
+    }
+
     $payload = Fixtures::thinV1CustomerCreated();
     $body = SignedPayload::body($payload);
     $sig = SignedPayload::header($body, 'whsec_wrong_secret');

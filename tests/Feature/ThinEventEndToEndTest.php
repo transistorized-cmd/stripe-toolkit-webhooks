@@ -34,6 +34,10 @@ class ThinEventCapture extends StripeWebhookHandler
 }
 
 beforeEach(function () {
+    if (! class_exists(V2Event::class)) {
+        $this->markTestSkipped('Thin events require stripe/stripe-php ^17 (no \Stripe\V2\Event in this matrix slot).');
+    }
+
     ThinEventCapture::$captured = [];
     StripeWebhook::route('stripe/webhook');
     config()->set('stripe-webhooks.queue.connection', 'sync');
